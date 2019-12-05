@@ -71,7 +71,7 @@ type
     function GetTagAlbum:string;
     function GetTagDate:string;
     function GetTagComment:string;
-
+    function UpdateTag:boolean;
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
     property MusicFile: string read FMusicFile write SetMusicFile;
@@ -332,7 +332,12 @@ end;
 
 function TUosPlayer.GetTagComment: string;
 begin
-  uos_InputGetTagComment(FPlayerIndex,FInputIndex);
+  result:=uos_InputGetTagComment(FPlayerIndex,FInputIndex);
+end;
+
+function TUosPlayer.UpdateTag: boolean;
+begin
+  result:=uos_InputUpdateTag(FPlayerIndex,FInputIndex);
 end;
 
 end.
