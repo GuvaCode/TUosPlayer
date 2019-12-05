@@ -1,34 +1,4 @@
 unit UosPlayer;
- {
-  TUosPlayer
-
-  © 2019 Гунько Вадим guvavode@gmail.com
-
-  Данная программа является свободным
-  программным обеспечением. Вы вправе
-  распространять её и/или модифицировать в
-  соответствии с условиями версии 2 либо по
-  вашему выбору с условиями более поздней
-  версии Стандартной Общественной
-  Лицензии GNU, опубликованной Free Software Foundation.
-
-  Мы распространяем эту программу в
-  надежде на то, что она будет вам полезной,
-  однако НЕ ПРЕДОСТАВЛЯЕМ НА НЕЁ НИКАКИХ
-  ГАРАНТИЙ, в том числе ГАРАНТИИ ТОВАРНОГО
-  СОСТОЯНИЯ ПРИ ПРОДАЖЕ и ПРИГОДНОСТИ ДЛЯ
-  ИСПОЛЬЗОВАНИЯ В КОНКРЕТНЫХ ЦЕЛЯХ. Для
-  получения более подробной информации
-  ознакомьтесь со Стандартной
-  Общественной Лицензией GNU.
-
-  Копия Стандартной Общественной Лицензии
-  GNU доступна в Интернете по адресу
-  <http://www.gnu.org/copyleft/gpl.html>. Вы также можете
-  получить экземпляр в Free Software Foundation, Inc., 51
-  Franklin Street - Fifth Floor, Boston, MA 02110-1335, USA.
-}
-
 
 {$mode objfpc}{$H+}
 
@@ -68,6 +38,7 @@ type
     FLibMp4ff: string;
     FLibFaad2: string;
     FLibOpusFile: string;
+
     FVolume_L: integer;
     FVolume_R: integer;
 
@@ -83,6 +54,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+
     procedure InitPlayer;
     procedure Play;
     procedure Seek(Position: Tcount_t);
@@ -94,9 +66,9 @@ type
     procedure Stop;
     function GetPlayerStatus: cint32;
     //-1 => error,  0 => has stopped, 1 => is running, 2 => is paused.
+    function GetTagTitle:string;
+
   published
-
-
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
     property MusicFile: string read FMusicFile write SetMusicFile;
     property LibPath: string read FLibPath write SetLibPath;
@@ -208,7 +180,6 @@ end;
 procedure TUosPlayer.ClosePlayer;
 begin
   if Assigned(FOnTrackEnd) then FOnTrackEnd(Self);
-  if Assigned(FOnStop) then FOnStop(Self);
 end;
 
 constructor TUosPlayer.Create(AOwner: TComponent);
@@ -326,14 +297,18 @@ end;
 
 procedure TUosPlayer.Stop;
 begin
-   if Assigned(FOnStop) then
-      FOnStop(Self);
+   if Assigned(FOnStop) then FOnStop(Self);
   uos_Stop(FPlayerIndex);
 end;
 
 function TUosPlayer.GetPlayerStatus: cint32;
 begin
   Result := uos_GetStatus(FPlayerIndex);
+end;
+
+function TUosPlayer.GetTagTitle: string;
+begin
+ result:=uos_InputGetTagTitle(FPlayerIndex,FInputIndex);
 end;
 
 end.
