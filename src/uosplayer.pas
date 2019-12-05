@@ -69,6 +69,9 @@ type
     function GetTagTitle:string;
     function GetTagArtist:string;
     function GetTagAlbum:string;
+    function GetTagDate:string;
+    function GetTagComment:string;
+
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
     property MusicFile: string read FMusicFile write SetMusicFile;
@@ -320,6 +323,16 @@ end;
 function TUosPlayer.GetTagAlbum: string;
 begin
   result:=uos_InputGetTagAlbum(FPlayerIndex,FInputIndex);
+end;
+
+function TUosPlayer.GetTagDate: string;
+begin
+  result:=uos_InputGetTagDate(FPlayerIndex,FInputIndex);
+end;
+
+function TUosPlayer.GetTagComment: string;
+begin
+  uos_InputGetTagComment(FPlayerIndex,FInputIndex);
 end;
 
 end.
