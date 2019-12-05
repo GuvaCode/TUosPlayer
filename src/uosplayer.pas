@@ -67,6 +67,7 @@ type
     function GetPlayerStatus: cint32;
     //-1 => error,  0 => has stopped, 1 => is running, 2 => is paused.
     function GetTagTitle:string;
+    function GetTagArtist:string;
 
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
@@ -309,6 +310,11 @@ end;
 function TUosPlayer.GetTagTitle: string;
 begin
  result:=uos_InputGetTagTitle(FPlayerIndex,FInputIndex);
+end;
+
+function TUosPlayer.GetTagArtist: string;
+begin
+  result:=uos_InputGetTagArtist(FPlayerIndex,FInputIndex);
 end;
 
 end.
