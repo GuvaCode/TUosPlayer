@@ -55,6 +55,7 @@ type
     FOnPlayning: TOnPlayningEvent;
     FOnResume: TNotifyEvent;
     FOnStop: TNotifyEvent;
+    FOnTrackEnd: TNotifyEvent;
     FPlayerIndex: integer;
     FOutputIndex: integer;
     FInputIndex: integer;
@@ -110,7 +111,7 @@ type
     property OnPause: TNotifyEvent read FOnPause write FOnPause;
     property OnResume: TNotifyEvent read FOnResume write FOnResume;
     property OnStop: TNotifyEvent read FOnStop write FOnStop;
-
+    property OnTrackEnd:  TNotifyEvent read FOnTrackEnd write FOnTrackEnd;
     property OnLog: TLogPlayerEvent read FOnLog write FOnLog;
 
   end;
@@ -206,8 +207,8 @@ end;
 
 procedure TUosPlayer.ClosePlayer;
 begin
-  if Assigned(FOnStop) then
-    FOnStop(Self);
+  if Assigned(FOnTrackEnd) then FOnTrackEnd(Self);
+  if Assigned(FOnStop) then FOnStop(Self);
 end;
 
 constructor TUosPlayer.Create(AOwner: TComponent);
@@ -325,6 +326,8 @@ end;
 
 procedure TUosPlayer.Stop;
 begin
+   if Assigned(FOnStop) then
+      FOnStop(Self);
   uos_Stop(FPlayerIndex);
 end;
 
