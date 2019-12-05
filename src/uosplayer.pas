@@ -68,7 +68,7 @@ type
     //-1 => error,  0 => has stopped, 1 => is running, 2 => is paused.
     function GetTagTitle:string;
     function GetTagArtist:string;
-
+    function GetTagAlbum:string;
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
     property MusicFile: string read FMusicFile write SetMusicFile;
@@ -315,6 +315,11 @@ end;
 function TUosPlayer.GetTagArtist: string;
 begin
   result:=uos_InputGetTagArtist(FPlayerIndex,FInputIndex);
+end;
+
+function TUosPlayer.GetTagAlbum: string;
+begin
+  result:=uos_InputGetTagAlbum(FPlayerIndex,FInputIndex);
 end;
 
 end.
