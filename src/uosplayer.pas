@@ -55,6 +55,7 @@ type
     procedure LoadUos;
     procedure LoopProcPlayer;
     procedure ClosePlayer;
+    function IsValidUrl(aUrl: String): Boolean;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -103,6 +104,7 @@ type
 procedure Register;
 
 implementation
+uses RegExpr;
 
 procedure Register;
 begin
@@ -186,6 +188,25 @@ begin
   if Assigned(FOnTrackEnd) then FOnTrackEnd(Self);
 end;
 
+function TUosPlayer.IsValidUrl(aUrl: String): Boolean;
+var
+  aRegEx: TRegexpr;
+  aExpr: String;
+begin
+  aExpr := '(http(s)?:\/\/.)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([a-zA-Z0-9@:%_\+.~#?&//=]*)';
+
+  aRegEx := TRegexpr.Create;
+  aRegEx.Expression := aExpr;
+  aRegEx.ModifierG;
+  try
+    Result := aRegEx.Exec(aUrl);
+  finally
+    aRegEx.Free;
+  end;
+end;
+
+
+
 constructor TUosPlayer.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
@@ -223,8 +244,18 @@ begin
   if FUosLoad and FileExists(FFileName) then
   begin
     FPlayerIndex := 0;
+
     if uos_CreatePlayer(FPlayerIndex) then
-      FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName), -1, samformat, -1);
+    if IsValidUrl(FFilename) then
+     begin
+    FInputIndex :=  uos_AddFromURL(FPlayerIndex, Pchar(FFileName),-1,samformat,-1, 0, false) ;
+
+     end else
+    FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName),-1, samformat, -1);
+
+
+
+
     if FInputIndex > -1 then
     begin
      {$if defined(cpuarm)}// needs lower latency
