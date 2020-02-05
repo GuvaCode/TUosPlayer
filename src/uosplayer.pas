@@ -249,7 +249,7 @@ begin
     if IsValidUrl(FFilename) then
      begin
     FInputIndex :=  uos_AddFromURL(FPlayerIndex, Pchar(FFileName),-1,samformat,-1, 0, false) ;
-
+                                                                                  {0-mp3,1-opus}
      end else
     FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName),-1, samformat, -1);
 
