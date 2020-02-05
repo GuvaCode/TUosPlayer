@@ -76,6 +76,7 @@ type
     function GetTagAlbum:string;
     function GetTagDate:string;
     function GetTagComment:string;
+    function GetIceCastTitle:string;
     function UpdateTag:boolean;
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
@@ -241,22 +242,22 @@ begin
 
   FInputIndex := -1;
 
-  if FUosLoad and FileExists(FFileName) then
+  if (FUosLoad and FileExists(FFileName)) or (FUosLoad and IsValidUrl(FFileName)) then
   begin
     FPlayerIndex := 0;
 
     if uos_CreatePlayer(FPlayerIndex) then
     if IsValidUrl(FFilename) then
-     begin
+    begin
     FInputIndex :=  uos_AddFromURL(FPlayerIndex, Pchar(FFileName),-1,samformat,-1, 0, false) ;
                                                                                   {0-mp3,1-opus}
      end else
-    FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName),-1, samformat, -1);
+     FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName),-1, samformat, -1);
 
 
 
 
-    if FInputIndex > -1 then
+    if FInputIndex <> - 1 then
     begin
      {$if defined(cpuarm)}// needs lower latency
       // todo надо как то купить малинку
@@ -360,6 +361,14 @@ function TUosPlayer.GetTagComment: string;
 begin
   result:=uos_InputGetTagComment(FPlayerIndex,FInputIndex);
 end;
+
+function TUosPlayer.GetIceCastTitle: string;
+begin
+
+
+end;
+
+
 
 function TUosPlayer.UpdateTag: boolean;
 begin
