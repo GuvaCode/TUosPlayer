@@ -14,10 +14,12 @@ type
   { TUosPlayer }
   TUosPlayer = class(TComponent)
   private
+
+    FFileName: String;
     FLength: cint32;
     FLengthTime: ttime;
     FLibPath: string;
-    FMusicFile: string;
+
     FOnLoadLib: TNotifyEvent;
     FOnLog: TLogPlayerEvent;
     FOnPause: TNotifyEvent;
@@ -42,12 +44,14 @@ type
     FVolume_L: integer;
     FVolume_R: integer;
 
+
+
     procedure SetLibPath(AValue: string);
-    procedure SetMusicFile(AValue: string);
+
     procedure SetSampleFormat(AValue: TSampleFormat);
-    procedure SetVolume_L(AValue: integer);
-    procedure SetVolume_R(AValue: integer);
+    procedure SetVolume(AValue: integer);
   protected
+    procedure SetFileName(const Value: String); virtual;
     procedure LoadUos;
     procedure LoopProcPlayer;
     procedure ClosePlayer;
@@ -74,10 +78,14 @@ type
     function UpdateTag:boolean;
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
-    property MusicFile: string read FMusicFile write SetMusicFile;
+
     property LibPath: string read FLibPath write SetLibPath;
-    property Volume_L: integer read FVolume_L write SetVolume_L;
-    property Volume_R: integer read FVolume_R write SetVolume_R;
+    property FileName: String read FFileName write SetFileName;
+
+
+    property Volume_L: integer read FVolume_L write SetVolume;
+    property Volume_R: integer read FVolume_R write SetVolume;
+
     property Length: cint32 read FLength;
     property LengthTime: ttime read FLengthTime;
 
@@ -111,13 +119,6 @@ begin
   FLibPath := AValue;
 end;
 
-procedure TUosPlayer.SetMusicFile(AValue: string);
-begin
-  if FMusicFile = AValue then
-    Exit;
-  FMusicFile := AValue;
-end;
-
 procedure TUosPlayer.SetSampleFormat(AValue: TSampleFormat);
 begin
   if FSampleFormat = AValue then
@@ -125,37 +126,36 @@ begin
   FSampleFormat := AValue;
 end;
 
-procedure TUosPlayer.SetVolume_L(AValue: integer);
+procedure TUosPlayer.SetVolume(AValue: integer);
 begin
   if AValue <= 100 then
   begin
     FVolume_L := AValue;
+    FVolume_R := AValue;
     uos_InputSetDSPVolume(FPlayerIndex, FInputIndex, FVolume_L / 100,FVolume_R / 100, True);
   end
   else
+   begin
+    FVolume_L := 100;
     FVolume_R := 100;
+   end;
 end;
 
-procedure TUosPlayer.SetVolume_R(AValue: integer);
+procedure TUosPlayer.SetFileName(const Value: String);
 begin
-  if AValue <= 100 then
-  begin
-    FVolume_R := AValue;
-    uos_InputSetDSPVolume(FPlayerIndex, FInputIndex, FVolume_L / 100, FVolume_R / 100, True);
-  end
-  else
-    FVolume_R := 100;
+  if FFilename=Value then exit;
+  FFileName := Value;
 end;
 
 procedure TUosPlayer.LoadUos;
 begin
   {$if defined(cpu64) and defined(linux) }
-  FLibPortaudio := FLibPath + '/Linux/64bit/LibPortaudio-64.so';
-  FLibSndFile := FLibPath + '/Linux/64bit/LibSndFile-64.so';
-  FLibMpg123 := FLibPath + '/Linux/64bit/LibMpg123-64.so';
-  FLibMp4ff := FLibPath + '/Linux/64bit/LibMp4ff-64.so';
-  FLibFaad2 := FLibPath + '/Linux/64bit/LibFaad2-64.so';
-  FLibOpusFile := FLibPath + '/Linux/64bit/LibOpusFile-64.so';
+  FLibPortaudio := FLibPath + 'LibPortaudio-64.so';
+  FLibSndFile   := FLibPath + 'LibSndFile-64.so';
+  FLibMpg123    := FLibPath + 'LibMpg123-64.so';
+  FLibMp4ff     := FLibPath + 'LibMp4ff-64.so';
+  FLibFaad2     := FLibPath + 'LibFaad2-64.so';
+  FLibOpusFile  := FLibPath + 'LibOpusFile-64.so';
   {$ENDIF}
   if uos_LoadLib(PChar(FLibPortaudio), PChar(FLibSndFile),
     PChar(FLibMpg123), PChar(FLibMp4ff), PChar(FLibFaad2), PChar(FLibOpusFile)) = 0 then
@@ -220,20 +220,20 @@ begin
 
   FInputIndex := -1;
 
-  if FUosLoad and fileexists(FMusicFile) then
+  if FUosLoad and FileExists(FFileName) then
   begin
     FPlayerIndex := 0;
     if uos_CreatePlayer(FPlayerIndex) then
-      FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FMusicFile), -1, samformat, -1);
+      FInputIndex := uos_AddFromFile(FPlayerIndex, PChar(FFileName), -1, samformat, -1);
     if FInputIndex > -1 then
     begin
      {$if defined(cpuarm)}// needs lower latency
       // todo надо как то купить малинку
-      FOutputIndex := uos_AddIntoDevOut(FPlayerIndex, -1, 0.3,
+        FOutputIndex := uos_AddIntoDevOut(FPlayerIndex, -1, 0.3,
         uos_InputGetSampleRate(FPlayerIndex, FInputIndex),
         uos_InputGetChannels(FPlayerIndex, FInputIndex), samformat, -1, -1);
      {$else}
-      FOutputIndex := uos_AddIntoDevOut(FPlayerIndex, -1, -1,
+        FOutputIndex := uos_AddIntoDevOut(FPlayerIndex, -1, -1,
         uos_InputGetSampleRate(FPlayerIndex, FInputIndex),
         uos_InputGetChannels(FPlayerIndex, FInputIndex), samformat, -1, -1);
      {$endif}
@@ -243,23 +243,18 @@ begin
       uos_EndProc(FPlayerIndex, @ClosePlayer);
 
       uos_InputAddDSPVolume(FPlayerIndex, FInputIndex, 1, 1);
-      uos_InputSetDSPVolume(FPlayerIndex, FInputIndex, FVolume_L / 100,
-        FVolume_R / 100, True); /// Set volume
+      uos_InputSetDSPVolume(FPlayerIndex, FInputIndex, FVolume_L/100,FVolume_R/100,True); /// Set volume
 
       uos_Play(FPlayerIndex);
 
       FLength := uos_InputLength(FPlayerIndex, FInputIndex);
       FLengthTime := uos_InputLengthTime(FPlayerIndex, FInputIndex);
 
-      if Assigned(FOnPlay) then
-        FOnPlay(Self);
-      if Assigned(FOnLog) then
-        FOnLog('Playning ....');
+      if Assigned(FOnPlay) then FOnPlay(Self);
+      if Assigned(FOnLog) then FOnLog('Playning ....');
     end
     else
-    if Assigned(FOnLog) then
-      FOnLog('Unable to open');
-
+    if Assigned(FOnLog) then FOnLog('Unable to open');
   end;
 
 end;
