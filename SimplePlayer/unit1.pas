@@ -71,7 +71,7 @@ end;
 procedure TForm1.PlayerBandLevel(BabdArray: array of cfloat);
 var i,v:integer;
 begin
-    i:=1;
+{    i:=1;
     x := 0;
     while x < length(BabdArray) -1 do
     begin
@@ -82,7 +82,7 @@ begin
       end;
       x:=x+2;
       inc(i);
-    end;
+    end;  }
 
 end;
 
@@ -101,7 +101,9 @@ end;
 
 procedure TForm1.Button3Click(Sender: TObject);
 begin
+
   LogBox.Items.Add(Player.GetIceCastTitle);
+//  LogBox.Items.Add(Player.GetTagTitle);
 end;
 
 procedure TForm1.PlayerLog(Log: string);

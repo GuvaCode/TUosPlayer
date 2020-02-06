@@ -7,15 +7,26 @@ interface
 uses
   Classes, SysUtils, LResources, uos_flat, ctypes;
 
+
+{EQ}
 type
+equalizer_band_type = record
+ lo_freq, hi_freq: integer;
+ Text: string[10];
+ end;
+
+type
+ { Events }
   TSampleFormat = (sfFloat32, sfInt32, sfInt16);
   TLogPlayerEvent = procedure(Log: string) of object;
   TOnPlayningEvent = procedure(PositionLength: cint32; PositionTime: ttime) of object;
   TOnBandLevelEvent = procedure(BabdArray : array of cfloat) of object;
   TOnShowLevelEvent = procedure(LeftLevel,RightLevel: Double) of object;
-  { TUosPlayer }
+
+ { TUosPlayer }
   TUosPlayer = class(TComponent)
   private
+
 
     FFileName: String;
     FLength: cint32;
@@ -61,6 +72,7 @@ type
     procedure ClosePlayer;
     function IsValidUrl(aUrl: String): Boolean;
   public
+    Equalizer_Bands: array[1..10] of equalizer_band_type;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -69,7 +81,9 @@ type
     procedure Seek(Position: Tcount_t);
     procedure SeekSeconds(Position: cfloat);
     procedure SeekTime(Position: ttime);
-
+    procedure SetEQ(EQIndex:integer;Gain:double;Enable:boolean);
+    //    uos_InputSetFilter(PlayerIndex1, In1Index, EQIndex1, -1, -1, Gain, -1, True,
+    //  checkbox1.Checked, nil);
     procedure Pause;
     procedure Resume;
     procedure Stop;
@@ -82,6 +96,8 @@ type
     function GetTagComment:string;
     function GetIceCastTitle:string;
     function UpdateTag:boolean;
+
+
   published
     property SampleFormat: TSampleFormat read FSampleFormat write SetSampleFormat;
 
@@ -91,6 +107,7 @@ type
 
     property Volume_L: integer read FVolume_L write SetVolume;
     property Volume_R: integer read FVolume_R write SetVolume;
+
 
     property Length: cint32 read FLength;
     property LengthTime: ttime read FLengthTime;
@@ -179,6 +196,36 @@ begin
   if Assigned(FOnLog) then
     FOnLog('Error while loading libraries...');
 
+  Equalizer_Bands[1].lo_freq := 18;
+  Equalizer_Bands[1].hi_freq := 46;
+  Equalizer_Bands[1].Text := '31';
+  Equalizer_Bands[2].lo_freq := 47;
+  Equalizer_Bands[2].hi_freq := 94;
+  Equalizer_Bands[2].Text := '62';
+  Equalizer_Bands[3].lo_freq := 95;
+  Equalizer_Bands[3].hi_freq := 188;
+  Equalizer_Bands[3].Text := '125';
+  Equalizer_Bands[4].lo_freq := 189;
+  Equalizer_Bands[4].hi_freq := 375;
+  Equalizer_Bands[4].Text := '250';
+  Equalizer_Bands[5].lo_freq := 376;
+  Equalizer_Bands[5].hi_freq := 750;
+  Equalizer_Bands[5].Text := '500';
+  Equalizer_Bands[6].lo_freq := 751;
+  Equalizer_Bands[6].hi_freq := 1500;
+  Equalizer_Bands[6].Text := '1K';
+  Equalizer_Bands[7].lo_freq := 1501;
+  Equalizer_Bands[7].hi_freq := 3000;
+  Equalizer_Bands[7].Text := '2K';
+  Equalizer_Bands[8].lo_freq := 3001;
+  Equalizer_Bands[8].hi_freq := 6000;
+  Equalizer_Bands[8].Text := '4K';
+  Equalizer_Bands[9].lo_freq := 6001;
+  Equalizer_Bands[9].hi_freq := 12000;
+  Equalizer_Bands[9].Text := '8K';
+  Equalizer_Bands[10].lo_freq := 12001;
+  Equalizer_Bands[10].hi_freq := 20000;
+  Equalizer_Bands[10].Text := '16K';
 end;
 
 procedure TUosPlayer.LoopProcPlayer;
@@ -245,6 +292,7 @@ end;
 procedure TUosPlayer.Play;
 var
   samformat: shortint;
+  i: integer;
 begin
   if uos_GetStatus(FPlayerIndex) > 0 then
     Stop;
@@ -296,20 +344,13 @@ begin
       ///
            if FOutputIndex > -1 then
     begin
-
-    // Spectrum : create  bandpass filters with alsobuf set to false, how many you want:
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 10000,20000, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 6000,10000, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 4000,6000, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 2500,4000, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 1000,2500, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 700,1000, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 500,700, 1, 3, false, nil);
-     uos_InputAddFilter(FPlayerIndex, FInputIndex, 300,500, 1, 3, false, nil);
-     //-----------------------------------------------------------------------
+      for i := 1 to 10 do
+      uos_InputAddFilter(FPlayerIndex, FInputIndex, Equalizer_Bands[i].lo_freq, Equalizer_Bands[i].hi_freq, 1, 3, False, nil);
     end;
 
-      uos_Play(FPlayerIndex);
+
+
+    uos_Play(FPlayerIndex);
 
       FLength := uos_InputLength(FPlayerIndex, FInputIndex);
       FLengthTime := uos_InputLengthTime(FPlayerIndex, FInputIndex);
@@ -336,6 +377,11 @@ end;
 procedure TUosPlayer.SeekTime(Position: ttime);
 begin
   uos_InputSeekTime(FPlayerIndex, FInputIndex, Position);
+end;
+
+procedure TUosPlayer.SetEQ(EQIndex: integer; Gain: double; Enable: boolean);
+begin
+   uos_InputSetFilter(FPlayerIndex, FInputIndex, EQIndex, -1, -1, Gain, -1, True, Enable, nil);
 end;
 
 procedure TUosPlayer.Pause;
@@ -395,8 +441,11 @@ begin
 end;
 
 function TUosPlayer.GetIceCastTitle: string;
+var Tegs:PChar;
 begin
-result:='No relase ...';
+ if uos_InputUpdateICY(FPlayerIndex,FInputIndex,Tegs)<> -1 then
+  result:=Tegs;
+
 end;
 
 function TUosPlayer.UpdateTag: boolean;

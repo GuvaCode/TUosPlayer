@@ -969,6 +969,7 @@ function uos_InputUpdateICY(PlayerIndex: cint32; InputIndex: cint32; var icy_dat
 // for mp3 only
 begin
  Result := -1;
+
   if (length(uosPlayers) > 0) and (PlayerIndex +1 <= length(uosPlayers)) then
   if  uosPlayersStat[PlayerIndex] = 1 then
   if assigned(uosPlayers[PlayerIndex]) then

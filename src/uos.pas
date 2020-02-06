@@ -2397,6 +2397,7 @@ begin
 {$IF DEFINED(webstream)}
 // for mp3 files only
 function Tuos_Player.InputUpdateICY(InputIndex: cint32; var icy_data : pchar): integer;
+var ut:Pchar;
 begin
 Result := -1;
   if (isAssigned = True) then
@@ -2406,7 +2407,7 @@ if assigned(StreamIn[InputIndex].httpget) then
 if StreamIn[InputIndex].httpget.ICYenabled = true then
 begin
  {$IF DEFINED(mpg123)}
-Result := mpg123_icy(StreamIn[InputIndex].Data.HandleSt, icy_data); 
+ result := mpg123_icy(StreamIn[InputIndex].Data.HandleSt, icy_data);
  {$endif}
 end;
 end;
