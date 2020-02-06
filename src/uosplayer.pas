@@ -441,11 +441,11 @@ begin
 end;
 
 function TUosPlayer.GetIceCastTitle: string;
-var Tegs:PChar;
+
 begin
  if uos_InputUpdateICY(FPlayerIndex,FInputIndex,Tegs)<> -1 then
   result:=Tegs;
-
+  //ffprobe -v quiet -print_format json -show_format -show_streams -print_format json https://icecast-radiovanya.cdnvideo.ru/rv_retro
 end;
 
 function TUosPlayer.UpdateTag: boolean;
