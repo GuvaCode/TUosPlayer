@@ -11,6 +11,8 @@ type
   TSampleFormat = (sfFloat32, sfInt32, sfInt16);
   TLogPlayerEvent = procedure(Log: string) of object;
   TOnPlayningEvent = procedure(PositionLength: cint32; PositionTime: ttime) of object;
+  TOnBandLevelEvent = procedure(BabdArray : array of cfloat) of object;
+  TOnShowLevelEvent = procedure(LeftLevel,RightLevel: Double) of object;
   { TUosPlayer }
   TUosPlayer = class(TComponent)
   private
@@ -25,7 +27,9 @@ type
     FOnPause: TNotifyEvent;
     FOnPlay: TNotifyEvent;
     FOnPlayning: TOnPlayningEvent;
+    FOnBandLevel: TOnBandLevelEvent;
     FOnResume: TNotifyEvent;
+    FOnShowLevel: TOnShowLevelEvent;
     FOnStop: TNotifyEvent;
     FOnTrackEnd: TNotifyEvent;
     FPlayerIndex: integer;
@@ -94,6 +98,8 @@ type
     property OnLoadLib: TNotifyEvent read FOnLoadLib write FOnLoadLib;
     property OnPlay: TNotifyEvent read FOnPlay write FOnPlay;
     property OnPlayning: TOnPlayningEvent read FOnPlayning write FOnPlayning;
+    property OnBandLevel: TOnBandLevelEvent read FOnBandLevel write FOnBandLevel;
+    property OnShowLevel: TOnShowLevelEvent read FOnShowLevel write FOnShowLevel;
     property OnPause: TNotifyEvent read FOnPause write FOnPause;
     property OnResume: TNotifyEvent read FOnResume write FOnResume;
     property OnStop: TNotifyEvent read FOnStop write FOnStop;
@@ -182,6 +188,15 @@ begin
     FOnPlayning(uos_InputPosition(FPlayerIndex, FInputIndex),
       uos_InputPositionTime(FPlayerIndex, FInputIndex));
   end;
+  if Assigned(FOnBandLevel) then
+   begin
+     FOnBandLevel(uos_InputFiltersGetLevelArray(FPlayerIndex,FInputIndex));
+   end;
+  if Assigned(FOnShowLevel) then
+   begin
+     FOnShowLevel(uos_InputGetLevelLeft(FPlayerIndex,FInputIndex),
+     uos_InputGetLevelRight(FPlayerIndex,FInputIndex));
+   end;
 end;
 
 procedure TUosPlayer.ClosePlayer;
@@ -277,6 +292,23 @@ begin
       uos_InputAddDSPVolume(FPlayerIndex, FInputIndex, 1, 1);
       uos_InputSetDSPVolume(FPlayerIndex, FInputIndex, FVolume_L/100,FVolume_R/100,True); /// Set volume
 
+
+      ///
+           if FOutputIndex > -1 then
+    begin
+
+    // Spectrum : create  bandpass filters with alsobuf set to false, how many you want:
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 10000,20000, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 6000,10000, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 4000,6000, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 2500,4000, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 1000,2500, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 700,1000, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 500,700, 1, 3, false, nil);
+     uos_InputAddFilter(FPlayerIndex, FInputIndex, 300,500, 1, 3, false, nil);
+     //-----------------------------------------------------------------------
+    end;
+
       uos_Play(FPlayerIndex);
 
       FLength := uos_InputLength(FPlayerIndex, FInputIndex);
@@ -364,11 +396,8 @@ end;
 
 function TUosPlayer.GetIceCastTitle: string;
 begin
-
-
+result:='No relase ...';
 end;
-
-
 
 function TUosPlayer.UpdateTag: boolean;
 begin

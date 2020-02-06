@@ -10,8 +10,8 @@ object Form1: TForm1
   LCLVersion = '2.0.6.0'
   object LogBox: TListBox
     Left = 0
-    Height = 221
-    Top = 184
+    Height = 133
+    Top = 272
     Width = 747
     Align = alBottom
     ItemHeight = 0
@@ -40,7 +40,7 @@ object Form1: TForm1
   object TrackBar1: TTrackBar
     Left = 0
     Height = 37
-    Top = 147
+    Top = 235
     Width = 747
     Position = 0
     Align = alBottom
@@ -50,7 +50,7 @@ object Form1: TForm1
   end
   object VolBar: TTrackBar
     Left = 688
-    Height = 147
+    Height = 235
     Top = 0
     Width = 59
     Max = 100
@@ -67,7 +67,7 @@ object Form1: TForm1
     Top = 49
     Width = 352
     TabOrder = 5
-    Text = 'http://163.172.160.245:8081/radio/vanyaspb/icecast.audio'
+    Text = 'https://icecast-radiovanya.cdnvideo.ru/rv_retro'
   end
   object Button3: TButton
     Left = 184
@@ -78,12 +78,94 @@ object Form1: TForm1
     OnClick = Button3Click
     TabOrder = 6
   end
+  object ProgressBar1: TProgressBar
+    Left = 384
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 7
+  end
+  object ProgressBar2: TProgressBar
+    Left = 400
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 8
+  end
+  object ProgressBar3: TProgressBar
+    Left = 416
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 9
+  end
+  object ProgressBar4: TProgressBar
+    Left = 432
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 10
+  end
+  object ProgressBar5: TProgressBar
+    Left = 448
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 11
+  end
+  object ProgressBar6: TProgressBar
+    Left = 464
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 12
+  end
+  object ProgressBar7: TProgressBar
+    Left = 480
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 13
+  end
+  object ProgressBar8: TProgressBar
+    Left = 496
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 14
+  end
+  object ProgressBar11: TProgressBar
+    Left = 584
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 15
+  end
+  object ProgressBar12: TProgressBar
+    Left = 600
+    Height = 168
+    Top = 16
+    Width = 12
+    Orientation = pbVertical
+    TabOrder = 16
+  end
   object Player: TUosPlayer
     SampleFormat = sfFloat32
     Volume_L = 100
     Volume_R = 100
     OnPlay = PlayerPlay
     OnPlayning = PlayerPlayning
+    OnBandLevel = PlayerBandLevel
+    OnShowLevel = PlayerShowLevel
     OnLog = PlayerLog
     left = 40
     top = 200
